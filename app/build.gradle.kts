@@ -57,16 +57,13 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
-
-//    implementation("com.github.bumptech.glide:glide:$glideVersion")
-//    ksp("com.github.bumptech.glide:compiler:$glideVersion")
+    //GLIDE
     implementation("com.github.bumptech.glide:glide:$glideVersion")
     ksp("com.github.bumptech.glide:ksp:$glideVersion")
 
-    //Volley
-//    implementation ("com.android.volley:volley:1.2.1")
     //Retrofit
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
+    implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
     //GSON  implementation 'com.google.code.gson:gson:2.10.0'
     implementation("com.google.code.gson:gson:$gsonVersion")
     //COROUTINES

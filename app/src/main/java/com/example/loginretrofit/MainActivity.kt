@@ -7,7 +7,18 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.loginretrofit.databinding.ActivityMainBinding
 import com.example.loginretrofit.Constants
+import com.example.loginretrofit.retrofit.LoginResponse
+import com.example.loginretrofit.retrofit.LoginService
+import com.example.loginretrofit.retrofit.UserInfo
+import com.google.gson.Gson
+import com.google.gson.internal.GsonBuildConfig
 import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 
 
 class MainActivity : AppCompatActivity() {
@@ -36,46 +47,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun login() {
-        val typeMethod = if (mBinding.swType.isChecked) Constants.LOGIN_PATH else Constants.REGISTER_PATH
-
-        val url = Constants.BASE_URL + Constants.API_PATH + typeMethod
-
         val email = mBinding.etEmail.text.toString().trim()
         val password = mBinding.etPassword.text.toString().trim()
 
-        val jsonParams = JSONObject()
-        if (email.isNotEmpty()){
-            jsonParams.put(Constants.EMAIL_PARAM, email)
-        }
-        if (password.isNotEmpty()){
-            jsonParams.put(Constants.PASSWORD_PARAM, password)
-        }
+        val retrofit = Retrofit.Builder()
+            .baseUrl(Constants.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
 
-//        val jsonObjectRequest = object : JsonObjectRequest(Method.POST, url, jsonParams, { response ->
-//            Log.i("response", response.toString())
-//
-//            val id = response.optString(Constants.ID_PROPERTY, Constants.ERROR_VALUE)
-//            val token = response.optString(Constants.TOKEN_PROPERTY, Constants.ERROR_VALUE)
-//
-//            val result = if (id.equals(Constants.ERROR_VALUE)) "${Constants.TOKEN_PROPERTY}: $token"
-//            else "${Constants.ID_PROPERTY}: $id, ${Constants.TOKEN_PROPERTY}: $token"
-//
-//            updateUI(result)
-//        }, {
-//            it.printStackTrace()
-//            if (it.networkResponse.statusCode == 400){
-//                updateUI(getString(R.string.main_error_server))
-//            }
-//        }){
-//            override fun getHeaders(): MutableMap<String, String> {
-//                val params = HashMap<String, String>()
-//
-//                params["Content-Type"] = "application/json"
-//                return params
-//            }
-//        }
-//
-//        LoginApplication.reqResAPI.addToRequestQueue(jsonObjectRequest)
+        val service = retrofit.create(LoginService::class.java)
+        service.login(UserInfo(email, password)).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                when (response.code()) {
+                    200 -> {
+                        val result = response.body()
+                        updateUI("${Constants.TOKEN_PROPERTY}: ${result?.token}")
+                    }
+
+                    400 -> {
+                        updateUI(getString(R.string.main_error_server))
+                    }
+                    else -> {
+                        updateUI(getString(R.string.main_error_response))
+                    }
+                }
+
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Log.e("RETROFIT", "Problemas con el servidor.")
+            }
+
+        })
     }
 
     private fun updateUI(result: String) {
