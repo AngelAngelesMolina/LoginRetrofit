@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.loginretrofit.databinding.ActivityMainBinding
 import com.example.loginretrofit.Constants
 import com.example.loginretrofit.retrofit.LoginResponse
@@ -12,6 +13,7 @@ import com.example.loginretrofit.retrofit.LoginService
 import com.example.loginretrofit.retrofit.UserInfo
 import com.google.gson.Gson
 import com.google.gson.internal.GsonBuildConfig
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -56,29 +58,40 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         val service = retrofit.create(LoginService::class.java)
-        service.login(UserInfo(email, password)).enqueue(object : Callback<LoginResponse> {
-            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                when (response.code()) {
-                    200 -> {
-                        val result = response.body()
-                        updateUI("${Constants.TOKEN_PROPERTY}: ${result?.token}")
+
+        lifecycleScope.launch {
+            try {
+                val result = service.loginUser(UserInfo(email, password))
+                updateUI("${Constants.TOKEN_PROPERTY}: ${result.token}")
+            } catch (e: Exception) {
+                updateUI(getString(R.string.main_error_server))
+            }
+        }
+        /*
+            service.login(UserInfo(email, password)).enqueue(object : Callback<LoginResponse> {
+                override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                    when (response.code()) {
+                        200 -> {
+                            val result = response.body()
+                            updateUI("${Constants.TOKEN_PROPERTY}: ${result?.token}")
+                        }
+
+                        400 -> {
+                            updateUI(getString(R.string.main_error_server))
+                        }
+                        else -> {
+                            updateUI(getString(R.string.main_error_response))
+                        }
                     }
 
-                    400 -> {
-                        updateUI(getString(R.string.main_error_server))
-                    }
-                    else -> {
-                        updateUI(getString(R.string.main_error_response))
-                    }
                 }
 
-            }
+                override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                    Log.e("RETROFIT", "Problemas con el servidor.")
+                }
 
-            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                Log.e("RETROFIT", "Problemas con el servidor.")
-            }
-
-        })
+            })
+            */
     }
 
     private fun updateUI(result: String) {
