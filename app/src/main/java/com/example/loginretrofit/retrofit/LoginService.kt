@@ -11,9 +11,13 @@ interface LoginService {
     @Headers("Content-Type: application/json")
     @POST(Constants.API_PATH + Constants.LOGIN_PATH)
     fun login(@Body data: UserInfo): Call<LoginResponse>
+
     @Headers("Content-Type: application/json")
     @POST(Constants.API_PATH + Constants.LOGIN_PATH)
     suspend fun loginUser(@Body data: UserInfo): LoginResponse
-    
+
+    @Headers("Content-Type: application/json")
+    @POST(Constants.API_PATH + Constants.REGISTER_PATH)
+    suspend fun registerUser(@Body data: UserInfo): RegisterResponse
 
 }
