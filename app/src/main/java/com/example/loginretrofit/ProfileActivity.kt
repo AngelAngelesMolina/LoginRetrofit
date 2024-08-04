@@ -1,13 +1,18 @@
 package com.example.loginretrofit
 
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.loginretrofit.databinding.ActivityProfileBinding
+import com.example.loginretrofit.retrofit.UserService
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class ProfileActivity : AppCompatActivity() {
@@ -24,37 +29,26 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun loadUserProfile() {
 
-        val url = Constants.BASE_URL + Constants.API_PATH + Constants.USERS_PATH + Constants.TWO_PATH
+        val url =
+            Constants.BASE_URL + Constants.API_PATH + Constants.USERS_PATH + Constants.TWO_PATH
+        val retrofit = Retrofit.Builder()
+            .baseUrl(Constants.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
 
-//        val jsonObjectRequest = object : JsonObjectRequest(Method.GET, url, null, { response ->
-//            Log.i("response", response.toString())
-//
-//            val gson = Gson()
-//
-//            val userJson = response.optJSONObject(Constants.DATA_PROPERTY)?.toString()
-//            val user: User = gson.fromJson(userJson, User::class.java)
-//
-//            val supportJson = response.optJSONObject(Constants.SUPPORT_PROPERTY)?.toString()
-//            val support: Support = gson.fromJson(supportJson, Support::class.java)
-//
-//            updateUI(user, support)
-//        }, {
-//            it.printStackTrace()
-//            if (it.networkResponse != null && it.networkResponse.statusCode == 400){
-//                showMessage(getString(R.string.main_error_server))
-//            }
-//        }){
-//            override fun getHeaders(): MutableMap<String, String> {
-//                val params = HashMap<String, String>()
-//
-//                params["Content-Type"] = "application/json"
-//                return params
-//            }
-//        }
-//
-//        LoginApplication.reqResAPI.addToRequestQueue(jsonObjectRequest)
+        val service = retrofit.create(UserService::class.java)
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val result = service.getSingleUser()
+                updateUI(result.data, result.support)
+            } catch (e: Exception) {
+                showMessage(getString(R.string.main_error_server))
+            }
+        }
     }
-    private fun updateUI(user: User, support: Support) {
+
+    private suspend fun updateUI(user: User, support: Support) = withContext(Dispatchers.Main) {
         with(mBinding) {
             tvFullName.text = user.getFullName()
             tvEmail.text = user.email
@@ -71,7 +65,7 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun showMessage(message: String){
+    private fun showMessage(message: String) {
         Snackbar.make(mBinding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 }

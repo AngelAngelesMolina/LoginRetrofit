@@ -2,28 +2,18 @@ package com.example.loginretrofit
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.loginretrofit.databinding.ActivityMainBinding
-import com.example.loginretrofit.Constants
-import com.example.loginretrofit.retrofit.LoginResponse
 import com.example.loginretrofit.retrofit.LoginService
 import com.example.loginretrofit.retrofit.UserInfo
-import com.google.gson.Gson
-import com.google.gson.internal.GsonBuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.HttpException
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 
 
 class MainActivity : AppCompatActivity() {
