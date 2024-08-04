@@ -64,7 +64,7 @@ dependencies {
     //Retrofit
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
-    //GSON  
+    //GSON
     implementation("com.google.code.gson:gson:$gsonVersion")
     //COROUTINES
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")

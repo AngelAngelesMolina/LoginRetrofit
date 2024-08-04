@@ -33,9 +33,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mBinding.btnLogin.setOnClickListener {
-            if (mBinding.swType.isChecked) login() else register()
-
-
+            loginOrRegister()
         }
 
         mBinding.btnProfile.setOnClickListener {
@@ -43,8 +41,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun login() {
+    private fun loginOrRegister() {
         val email = mBinding.etEmail.text.toString().trim()
         val password = mBinding.etPassword.text.toString().trim()
 
@@ -55,6 +52,15 @@ class MainActivity : AppCompatActivity() {
 
         val service = retrofit.create(LoginService::class.java)
 
+        if (mBinding.swType.isChecked) login(email, password, service) else register(
+            email,
+            password,
+            service
+        )
+    }
+
+
+    private fun login(email: String, password: String, service: LoginService) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val result = service.loginUser(UserInfo(email, password))
@@ -62,56 +68,13 @@ class MainActivity : AppCompatActivity() {
                 updateUI("${Constants.TOKEN_PROPERTY}: ${result.token}")
             } catch (e: Exception) {
                 (e as? HttpException)?.let {
-                    when (it.code()) {
-                        400 -> {
-                            updateUI(getString(R.string.main_error_server))
-                        }
-
-                        else -> {
-                            updateUI(getString(R.string.main_error_response))
-                        }
-                    }
+                    checkError(e)
                 }
             }
         }
-        /*
-            service.login(UserInfo(email, password)).enqueue(object : Callback<LoginResponse> {
-                override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                    when (response.code()) {
-                        200 -> {
-                            val result = response.body()
-                            updateUI("${Constants.TOKEN_PROPERTY}: ${result?.token}")
-                        }
-
-                        400 -> {
-                            updateUI(getString(R.string.main_error_server))
-                        }
-                        else -> {
-                            updateUI(getString(R.string.main_error_response))
-                        }
-                    }
-
-                }
-
-                override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                    Log.e("RETROFIT", "Problemas con el servidor.")
-                }
-
-            })
-            */
     }
 
-    private fun register() {
-        val email = mBinding.etEmail.text.toString().trim()
-        val password = mBinding.etPassword.text.toString().trim()
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl(Constants.BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val service = retrofit.create(LoginService::class.java)
-
+    private fun register(email: String, password: String, service: LoginService) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val result = service.registerUser(UserInfo(email, password))
@@ -121,16 +84,20 @@ class MainActivity : AppCompatActivity() {
                 )
             } catch (e: Exception) {
                 (e as? HttpException)?.let {
-                    when (it.code()) {
-                        400 -> {
-                            updateUI(getString(R.string.main_error_server))
-                        }
-
-                        else -> {
-                            updateUI(getString(R.string.main_error_response))
-                        }
-                    }
+                    checkError(e)
                 }
+            }
+        }
+    }
+
+    private suspend fun checkError(e: HttpException) {
+        when (e.code()) {
+            400 -> {
+                updateUI(getString(R.string.main_error_server))
+            }
+
+            else -> {
+                updateUI(getString(R.string.main_error_response))
             }
         }
     }

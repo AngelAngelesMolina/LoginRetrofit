@@ -2,7 +2,6 @@ package com.example.loginretrofit
 
 
 object Constants {
-
     const val BASE_URL = "https://reqres.in"
 
     const val API_PATH = "/api"
@@ -16,8 +15,4 @@ object Constants {
 
     const val ID_PROPERTY = "id"
     const val TOKEN_PROPERTY = "token"
-    const val DATA_PROPERTY = "data"
-    const val SUPPORT_PROPERTY = "support"
-
-    const val ERROR_VALUE = "fail"
 }
